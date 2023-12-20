@@ -11,7 +11,8 @@ import java.util.Random;
 public class Memoria {
     private int tamanoMemoria; // Tamaño total de la memoria
     private List<Particion> particiones; // Lista de particiones de memoria
-    private List<Proceso> colaEspera; // Lista de procesos en espera
+    // private List<Proceso> listaEspera; // Lista de procesos en espera, 
+    // debe validar que el proceso alcance en una particion para dejarlo en la lista de espera sino no se guarda en espera
 
     /**
      * Constructor de la clase Memoria. Inicializa el tamaño de la memoria y las
@@ -21,8 +22,9 @@ public class Memoria {
         Random random = new Random();
         // Numero aleatorio entre 1000 y 2000 para la memoria total
         tamanoMemoria = random.nextInt(1001) + 1000;
+
         particiones = new ArrayList<>();
-        colaEspera = new ArrayList<>(); // Inicializar lista de espera
+        // listaEspera = new ArrayList<>(); // Inicializar lista de espera
 
         // Particion para el sistema operativo
         particiones.add(new Particion("Sistema Operativo", 200));
@@ -76,6 +78,7 @@ public class Memoria {
             if (!particion.estaOcupada() && !particion.getNombre().equals("Sistema Operativo")) {
                 if (particion.getTamano() >= proceso.getTamano()) {
                     particion.asignarProceso(proceso);
+
                     System.out.println("Alcanza el tamaño particion:" + particion.getTamano());
                     System.out.println("Tamaño proceso:" + proceso.getTamano());
                     return true;
@@ -84,11 +87,11 @@ public class Memoria {
         }
 
         // Si no hay suficiente espacio o todas las particiones están ocupadas
-        if (todasParticionesOcupadas()) {
-            System.out.println("No hay particiones libres.");
-            System.out.println("Se debe implementar lista de espera.");
+        // if (todasParticionesOcupadas()) {
+        //     System.out.println("No hay particiones libres.");
+        //     System.out.println("Se debe implementar lista de espera.");
+        // }
 
-        }
         return false;
     }
 
@@ -115,15 +118,16 @@ public class Memoria {
         }
 
         // Verificar si hay procesos en espera y tratar de asignarles memoria
-        // for (Proceso procesoEspera : new ArrayList<>(colaEspera)) {
+        // for (Proceso procesoEspera : new ArrayList<>(listaEspera)) {
         // if (asignarMemoriaProceso(procesoEspera)) {
         // // Si se asignan en memoria se sacan de la cola
-        // colaEspera.remove(procesoEspera);
+        // listaEspera.remove(procesoEspera);
         // }
         // }
     }
 
     public boolean todasParticionesOcupadas() {
+        // Es para la lista de espera
         for (Particion particion : particiones) {
             if (!particion.estaOcupada() && !particion.getNombre().equals("Sistema Operativo")) {
                 return false; // Si al menos una partición no está ocupada, retorna false
@@ -137,17 +141,17 @@ public class Memoria {
      * 
      * @param proceso Proceso que se agregará a la lista de espera.
      */
-    public void agregarProcesoEspera(Proceso proceso) {
-        colaEspera.add(proceso);
-    }
+    // public void agregarProcesoEspera(Proceso proceso) {
+    //     listaEspera.add(proceso);
+    // }
 
     // Retorna los procesos que están en espera
-    public List<Proceso> getProcesosEnEspera() {
-        return colaEspera;
-    }
+    // public List<Proceso> getProcesosEnEspera() {
+    //     return listaEspera;
+    // }
 
-    public void removerProcesoEspera(Proceso proceso) {
-        colaEspera.remove(proceso);
-    }
+    // public void removerProcesoEspera(Proceso proceso) {
+    //     listaEspera.remove(proceso);
+    // }
 
 }

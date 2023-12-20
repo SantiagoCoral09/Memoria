@@ -24,7 +24,7 @@ public class Particion {
     // Método para asignar un proceso a la partición
     public boolean asignarProceso(Proceso proceso) {
         // Verifica si la partición está libre y si el tiempo restante del proceso cabe en la partición
-        if (!estaOcupada() && proceso.getTiempoRestante() <= tamano) {
+        if (!estaOcupada() && proceso.getTamano() <= tamano) {
             procesoAsignado = proceso;
             return true; // Devuelve true si el proceso se asigna correctamente
         }

@@ -35,8 +35,6 @@ public class InterfazGrafica extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 500);
 
-        // Etiqueta que muestra el tamaño total de la memoria
-        // Crear panel para la información de la memoria
         // Panel principal que contiene toda la interfaz
         JPanel panelPrincipal = new JPanel(new BorderLayout());
 
