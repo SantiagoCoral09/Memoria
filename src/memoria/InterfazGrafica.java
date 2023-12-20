@@ -18,7 +18,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class InterfazGrafica extends JFrame {
-    private Memoria memoria;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Memoria memoria;
     private DefaultTableModel tablaModelo;
     private JTable tabla;
     private JTextArea areaMensajes;
@@ -72,9 +76,13 @@ public class InterfazGrafica extends JFrame {
         JPanel panelCentral = new JPanel(new BorderLayout());
 
         // Tabla
-        tablaModelo = new DefaultTableModel(
-                new String[] { "Partición", "Tamaño", "Estado", "Proceso:Tamaño", "Tiempo Restante" }, 0) {
-            @Override
+        tablaModelo = new DefaultTableModel(new String[] { "Partición", "Tamaño", "Estado", "Proceso:Tamaño", "Tiempo Restante" }, 0) {
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
             public boolean isCellEditable(int row, int column) {
                 return false; // Todas las celdas no son editables, para evitarrr que el usuarioo ingrese datoss en la tabbla
             }
