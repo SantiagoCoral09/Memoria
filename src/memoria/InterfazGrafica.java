@@ -1,14 +1,17 @@
 package memoria;
 
 import javax.swing.table.DefaultTableModel;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import java.awt.*;
@@ -18,35 +21,42 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class InterfazGrafica extends JFrame {
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private Memoria memoria;
+    private Memoria memoria;
     private DefaultTableModel tablaModelo;
     private JTable tabla;
     private JTextArea areaMensajes;
     private Timer temporizador;
+
+    // Para la tabla de procesos en espera
+    private DefaultTableModel tablaModeloEspera;
+    private JTable tablaEspera;
 
     public InterfazGrafica() {
         memoria = new Memoria();
 
         setTitle("Asignación Contigua Estática - Primer Ajuste");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 500);
+        setSize(1000, 500); // Ajusta el tamaño del frame
 
         // Panel principal que contiene toda la interfaz
         JPanel panelPrincipal = new JPanel(new BorderLayout());
 
-        // Panel superior que contiene la información de la memoria y de la tabla
-        JPanel panelInfo = new JPanel(new BorderLayout());
+        // Panel superior que contiene la información de la memoria
+        JPanel panelMemoria = new JPanel(new GridLayout(2,1));
+        JLabel labelInfoM = new JLabel("");
+        JLabel labelInfoMemoria = new JLabel("Tamaño Total de Memoria: " + memoria.getTamanoMemoria(),SwingConstants.CENTER);
+        panelMemoria.add(labelInfoM);
+        panelMemoria.add(labelInfoMemoria, BorderLayout.NORTH);
 
-        // Información de la memoria
-        JLabel labelInfoMemoria = new JLabel("***    Tamaño Total de Memoria: " + memoria.getTamanoMemoria());
-        panelInfo.add(labelInfoMemoria, BorderLayout.NORTH);
+        // Panel central que contiene la tabla principal y la tabla de procesos en
+        // espera
+        JSplitPane panelCentral = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-        // Información de la tabla
-        JPanel panelInfoTabla = new JPanel(new GridLayout(8, 1));
+        // Panel izquierdo para la tabla de particiones y botón
+        JPanel panelIzquierdo = new JPanel(new BorderLayout());
+
+        // Texto informativo de la tabla de particiones
+        JPanel panelInfoTabla = new JPanel(new GridLayout(9, 1));
         JLabel labelInfoTabla = new JLabel("");
         JLabel labelInfoTabla1 = new JLabel("*** Información de la tabla ***");
         JLabel labelInfoTabla2 = new JLabel("- Partición: Nombre de la partición.");
@@ -58,6 +68,7 @@ public class InterfazGrafica extends JFrame {
         JLabel labelInfoTabla6 = new JLabel(
                 "- Tiempo Restante: Tiempo restante de ejecución del proceso asignado. Si la partición está libre, esta columna estará en cero.");
         JLabel labelInfoTabla7 = new JLabel("");
+        JLabel labelInfoTabla8 = new JLabel("<html><div style='text-align:center;'>Tabla de particiones</div></html>",SwingConstants.CENTER);
 
         panelInfoTabla.add(labelInfoTabla);
         panelInfoTabla.add(labelInfoTabla1);
@@ -67,54 +78,72 @@ public class InterfazGrafica extends JFrame {
         panelInfoTabla.add(labelInfoTabla5);
         panelInfoTabla.add(labelInfoTabla6);
         panelInfoTabla.add(labelInfoTabla7);
+        panelInfoTabla.add(labelInfoTabla8);
 
-        panelInfo.add(panelInfoTabla, BorderLayout.CENTER);
-
-        // Panel central que contiene la tabla
-        JPanel panelCentral = new JPanel(new BorderLayout());
-
-        // Tabla
-        tablaModelo = new DefaultTableModel(new String[] { "Partición", "Tamaño", "Estado", "Proceso:Tamaño", "Tiempo Restante" }, 0) {
-            /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
-			@Override
+        // Tabla principal
+        tablaModelo = new DefaultTableModel(
+                new String[] { "Partición", "Tamaño", "Estado", "Proceso:Tamaño", "Tiempo Restante" }, 0) {
+            @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Todas las celdas no son editables, para evitarrr que el usuarioo ingrese datoss en la tabbla
+                return false;
             }
         };
         tabla = new JTable(tablaModelo);
-        panelCentral.add(new JScrollPane(tabla), BorderLayout.CENTER);
+        JScrollPane scrollPaneTabla = new JScrollPane(tabla);
+        panelIzquierdo.add(panelInfoTabla, BorderLayout.NORTH);
+        panelIzquierdo.add(scrollPaneTabla, BorderLayout.CENTER);
 
-        // Área de mensajes
-        areaMensajes = new JTextArea();
-        areaMensajes.setEditable(false);//evitar que el textarea se puede editar texto, es de solo lectuta
-        JScrollPane scrollPaneMensajes = new JScrollPane(areaMensajes);//scroll para mostrar los mensajes
-        scrollPaneMensajes.setPreferredSize(new Dimension(750, 70));//dimesniones de la textareA
-        panelCentral.add(scrollPaneMensajes, BorderLayout.SOUTH);
 
-        // Panel inferior que contiene el botón
-        JPanel panelInferior = new JPanel();
+        // Botón
+        JPanel panelBoton = new JPanel();
         JButton botonAgregarProceso = new JButton("Agregar Proceso");
         botonAgregarProceso.addActionListener(new ActionListener() {
-            //Al presionar el boton se ejecuta la funcion agregarProceso()
             @Override
             public void actionPerformed(ActionEvent e) {
                 agregarProceso();
             }
         });
-        panelInferior.add(botonAgregarProceso);
+        panelBoton.add(botonAgregarProceso);
+        panelIzquierdo.add(panelBoton, BorderLayout.SOUTH);
+
+        // Espacio entre las dos tablas
+        panelIzquierdo.add(Box.createRigidArea(new Dimension(20, 0)), BorderLayout.EAST);
 
         // Agregar paneles superior, central e inferior al panel principal
-        // Es la disposicion de los objetos visuales
-        panelPrincipal.add(panelInfo, BorderLayout.NORTH);
-        panelPrincipal.add(panelCentral, BorderLayout.CENTER);
-        panelPrincipal.add(panelInferior, BorderLayout.SOUTH);
+        panelPrincipal.add(panelMemoria, BorderLayout.NORTH);
+        panelCentral.add(panelIzquierdo);
 
-        // Agregar el panel principal al frame
-        add(panelPrincipal);
+        // Panel derecho para la tabla de procesos en espera
+        JPanel panelDerecho = new JPanel(new BorderLayout());
+
+        // Tabla de procesos en espera
+        tablaModeloEspera = new DefaultTableModel(new String[] { "Proceso", "Tamaño" }, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tablaEspera = new JTable(tablaModeloEspera);
+        JScrollPane scrollPaneTablaEspera = new JScrollPane(tablaEspera);
+        panelDerecho.add(new JLabel("<html><div style='text-align:center;'>Procesos en Espera</div></html>",
+                SwingConstants.CENTER), BorderLayout.NORTH);
+        panelDerecho.add(scrollPaneTablaEspera, BorderLayout.CENTER);
+
+        // Agrega el panel derecho al panel central
+        panelCentral.add(panelDerecho);
+
+        // Agrega el panel central al panel principal
+        panelPrincipal.add(panelCentral, BorderLayout.CENTER);
+
+        // Área de mensajes
+        areaMensajes = new JTextArea();
+        areaMensajes.setEditable(false);
+        // Envuelve el JTextArea en un JScrollPane
+        JScrollPane scrollPaneMensajes = new JScrollPane(areaMensajes);
+        scrollPaneMensajes.setPreferredSize(new Dimension(750, 70)); // Dimensiones personalizadas del área de mensajes
+
+        panelPrincipal.add(scrollPaneMensajes, BorderLayout.SOUTH); // Ajusta el área de mensajes para que quede debajo
+                                                                    // de la tabla
 
         // Funcion de inicialización y actualización de la tabla
         actualizarTabla();
@@ -132,6 +161,9 @@ public class InterfazGrafica extends JFrame {
                 });
             }
         }, 0, 1000);
+
+        // Agrega el panel principal al frame
+        add(panelPrincipal);
     }
 
     // Método para agregar un nuevo proceso
@@ -153,6 +185,9 @@ public class InterfazGrafica extends JFrame {
                 boolean asignado = memoria.asignarMemoriaProceso(nuevoProceso);
                 // Asignar un nuevo proceso, en caso que haya libres y el tamaño alcance
                 if (asignado) {
+                    JOptionPane.showMessageDialog(this, "Proceso agregado correctamente.", "Éxito",
+                            JOptionPane.INFORMATION_MESSAGE);
+
                     areaMensajes.append("Proceso " + nombreProceso + " asignado correctamente. Tamaño: "
                             + nuevoProceso.getTamano() + "\n");
                     System.out.println("Proceso " + nombreProceso + " asignado correctamente. \n");
@@ -164,12 +199,15 @@ public class InterfazGrafica extends JFrame {
 
                 // Llamar a la funcion que actualiza la tabla con el nuevo proceso
                 actualizarTabla();
+                // memoria.asignarDesdeListaEspera();
             }
         }
     }
 
     // Método para actualizar la tabla de memoria
     private void actualizarTabla() {
+        actualizarTablaEspera();
+
         // Se llama a la funcion que verfifica el tiempo restante de los procesos
         memoria.liberarMemoria();
         memoria.reducirTiemposRestantes();
@@ -200,6 +238,17 @@ public class InterfazGrafica extends JFrame {
             tablaModelo.addRow(new Object[] { particion.getNombre(), particion.getTamano(), estado, procesoAsignado,
                     tiempoRestante });
 
+        }
+    }
+
+    // Para actualizar la tabla de procesos e espera
+    private void actualizarTablaEspera() {
+        // Limpiar el modelo de la tabla de procesos en espera
+        tablaModeloEspera.setRowCount(0);
+
+        // Llenar la tabla con información actualizada de los procesos en espera
+        for (Proceso proceso : memoria.getProcesosEnEspera()) {
+            tablaModeloEspera.addRow(new Object[] { proceso.getNombre(), proceso.getTamano() });
         }
     }
 

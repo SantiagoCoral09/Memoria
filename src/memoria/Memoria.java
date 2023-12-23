@@ -11,7 +11,7 @@ import java.util.Random;
 public class Memoria {
     private int tamanoMemoria; // Tamaño total de la memoria
     private List<Particion> particiones; // Lista de particiones de memoria
-    // private List<Proceso> listaEspera; // Lista de procesos en espera, 
+    private List<Proceso> listaEspera; // Lista de procesos en espera, 
     // debe validar que el proceso alcance en una particion para dejarlo en la lista de espera sino no se guarda en espera
 
     /**
@@ -24,7 +24,9 @@ public class Memoria {
         tamanoMemoria = random.nextInt(1001) + 1000;
 
         particiones = new ArrayList<>();
-        // listaEspera = new ArrayList<>(); // Inicializar lista de espera
+        listaEspera = new ArrayList<>(); // Inicializar lista de espera
+        listaEspera.add(new Proceso("primero"));
+        listaEspera.add(new Proceso("segundo"));
 
         // Particion para el sistema operativo
         particiones.add(new Particion("Sistema Operativo", 200));
@@ -141,17 +143,17 @@ public class Memoria {
      * 
      * @param proceso Proceso que se agregará a la lista de espera.
      */
-    // public void agregarProcesoEspera(Proceso proceso) {
-    //     listaEspera.add(proceso);
-    // }
+    public void agregarProcesoEspera(Proceso proceso) {
+        listaEspera.add(proceso);
+    }
 
     // Retorna los procesos que están en espera
-    // public List<Proceso> getProcesosEnEspera() {
-    //     return listaEspera;
-    // }
+    public List<Proceso> getProcesosEnEspera() {
+        return listaEspera;
+    }
 
-    // public void removerProcesoEspera(Proceso proceso) {
-    //     listaEspera.remove(proceso);
-    // }
+    public void removerProcesoEspera(Proceso proceso) {
+        listaEspera.remove(proceso);
+    }
 
 }
