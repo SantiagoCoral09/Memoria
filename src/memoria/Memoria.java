@@ -11,8 +11,9 @@ import java.util.Random;
 public class Memoria {
     private int tamanoMemoria; // Tamaño total de la memoria
     private List<Particion> particiones; // Lista de particiones de memoria
-    private List<Proceso> listaEspera; // Lista de procesos en espera, 
-    // debe validar que el proceso alcance en una particion para dejarlo en la lista de espera sino no se guarda en espera
+    private List<Proceso> listaEspera; // Lista de procesos en espera,
+    // debe validar que el proceso alcance en una particion para dejarlo en la lista
+    // de espera sino no se guarda en espera
 
     /**
      * Constructor de la clase Memoria. Inicializa el tamaño de la memoria y las
@@ -25,8 +26,8 @@ public class Memoria {
 
         particiones = new ArrayList<>();
         listaEspera = new ArrayList<>(); // Inicializar lista de espera
-        listaEspera.add(new Proceso("primero"));
-        listaEspera.add(new Proceso("segundo"));
+        // listaEspera.add(new Proceso("primero"));
+        // listaEspera.add(new Proceso("segundo"));
 
         // Particion para el sistema operativo
         particiones.add(new Particion("Sistema Operativo", 200));
@@ -39,7 +40,7 @@ public class Memoria {
 
         // Crear particiones aleatorias
         for (int i = 0; i < numParticiones - 1; i++) {
-            int tamanoParticion = random.nextInt(espacioRestante / 2) + 1;
+            int tamanoParticion = random.nextInt(espacioRestante / 2) + 50;
             particiones.add(new Particion("Partición " + (i + 1), tamanoParticion));
             espacioRestante -= tamanoParticion;
         }
@@ -74,6 +75,28 @@ public class Memoria {
      *         se agrega a la lista de espera.
      */
 
+    public boolean todasParticionesOcupadas() {
+        // Es para la lista de espera
+        for (Particion particion : particiones) {
+            if (!particion.estaOcupada() && !particion.getNombre().equals("Sistema Operativo")) {
+                return false; // Si al menos una partición no está ocupada, retorna false
+            }
+        }
+        return true; // Todas las particiones están ocupadas
+    }
+
+    public boolean procesoAlcanzaEnParticion(Proceso proceso) {
+        // Metodo para validar si un proceso alcanza en alguna particion
+        for (Particion particion : particiones) {
+            if (particion.getTamano() >= proceso.getTamano() && !particion.getNombre().equals("Sistema Operativo")) {
+                // Si se encuentra con una donde alcance ya devuelve Verdadero
+                return true;
+            }
+        }
+        // En caso que no encuentre alguna devuelve Falso
+        return false;
+    }
+
     public boolean asignarMemoriaProceso(Proceso proceso) {
         for (Particion particion : particiones) {
             // Se valida que la partivion no sea del sist. operativo y que no esté ocupada
@@ -87,14 +110,7 @@ public class Memoria {
                 }
             }
         }
-
-        // Si no hay suficiente espacio o todas las particiones están ocupadas
-        // if (todasParticionesOcupadas()) {
-        //     System.out.println("No hay particiones libres.");
-        //     System.out.println("Se debe implementar lista de espera.");
-        // }
-
-        return false;
+        return false;//Si no alcanza el proceso en ninguna particion
     }
 
     /**
@@ -126,16 +142,6 @@ public class Memoria {
         // listaEspera.remove(procesoEspera);
         // }
         // }
-    }
-
-    public boolean todasParticionesOcupadas() {
-        // Es para la lista de espera
-        for (Particion particion : particiones) {
-            if (!particion.estaOcupada() && !particion.getNombre().equals("Sistema Operativo")) {
-                return false; // Si al menos una partición no está ocupada, retorna false
-            }
-        }
-        return true; // Todas las particiones están ocupadas
     }
 
     /**

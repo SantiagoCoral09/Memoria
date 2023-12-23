@@ -19,8 +19,8 @@ public class Proceso {
         // ¨Por ejemplo para que este entre 10 y 15 segundos un proceso sería:::
         // ... =new Random().nextInt(6)+10;
         // >La parte de .nextInt(bound 6) genera un aleatorio entre 0 y 5
-        // Luego al sumarle +5 se genera un aleatorio entre 5 y 10
-        this.tiempoRestante = new Random().nextInt(6) + 20;
+        // Luego al sumarle +5 se genera un aleatorio entre 30 y 40
+        this.tiempoRestante = new Random().nextInt(6) + 55;
         // Tamaño aleatorio entre 5 y 300 (puedes ajustar estos valores según tus necesidades)
         this.tamano = new Random().nextInt(296) + 5;
     }

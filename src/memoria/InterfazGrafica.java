@@ -17,6 +17,8 @@ import javax.swing.SwingUtilities;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -42,9 +44,10 @@ public class InterfazGrafica extends JFrame {
         JPanel panelPrincipal = new JPanel(new BorderLayout());
 
         // Panel superior que contiene la información de la memoria
-        JPanel panelMemoria = new JPanel(new GridLayout(2,1));
+        JPanel panelMemoria = new JPanel(new GridLayout(2, 1));
         JLabel labelInfoM = new JLabel("");
-        JLabel labelInfoMemoria = new JLabel("Tamaño Total de Memoria: " + memoria.getTamanoMemoria(),SwingConstants.CENTER);
+        JLabel labelInfoMemoria = new JLabel("Tamaño Total de Memoria: " + memoria.getTamanoMemoria(),
+                SwingConstants.CENTER);
         panelMemoria.add(labelInfoM);
         panelMemoria.add(labelInfoMemoria, BorderLayout.NORTH);
 
@@ -68,7 +71,8 @@ public class InterfazGrafica extends JFrame {
         JLabel labelInfoTabla6 = new JLabel(
                 "- Tiempo Restante: Tiempo restante de ejecución del proceso asignado. Si la partición está libre, esta columna estará en cero.");
         JLabel labelInfoTabla7 = new JLabel("");
-        JLabel labelInfoTabla8 = new JLabel("<html><div style='text-align:center;'>Tabla de particiones</div></html>",SwingConstants.CENTER);
+        JLabel labelInfoTabla8 = new JLabel("<html><div style='text-align:center;'>Tabla de particiones</div></html>",
+                SwingConstants.CENTER);
 
         panelInfoTabla.add(labelInfoTabla);
         panelInfoTabla.add(labelInfoTabla1);
@@ -92,7 +96,6 @@ public class InterfazGrafica extends JFrame {
         JScrollPane scrollPaneTabla = new JScrollPane(tabla);
         panelIzquierdo.add(panelInfoTabla, BorderLayout.NORTH);
         panelIzquierdo.add(scrollPaneTabla, BorderLayout.CENTER);
-
 
         // Botón
         JPanel panelBoton = new JPanel();
@@ -172,35 +175,56 @@ public class InterfazGrafica extends JFrame {
         String nombreProceso = JOptionPane.showInputDialog("Ingrese el nombre del proceso:");
         if (nombreProceso != null && !nombreProceso.isEmpty()) {
             // Si se escribe un nombre del proceso se realiza la asignacion de menmoria
-            if (memoria.todasParticionesOcupadas()) {
-                // Validar que haya particiones libres si estan ocupadas muetsra el mensaje
-                // Aqui se debe implememtar la lista de espera
-                areaMensajes.append("Error: No hay particiones libres para el proceso " + nombreProceso + ".\n");
+            Proceso nuevoProceso = new Proceso(nombreProceso);
 
-                System.out.println("No hay particiones libres para el proceso " + nombreProceso + ".\n");
+            if (memoria.procesoAlcanzaEnParticion(nuevoProceso)) {
+                // Verificar si hay procesos en la lista de espera
+                if (!memoria.getProcesosEnEspera().isEmpty()) {
+                    // Agregar el proceso al final de la lista de espera
+                    memoria.agregarProcesoEspera(nuevoProceso);
+                    areaMensajes.append("Proceso " + nombreProceso + " agregado a la lista de espera.\n");
+                    System.out.println("Proceso " + nombreProceso + " agregado a la lista de espera.\n");
+                    actualizarTabla();
+                    return; // Salir del método ya que el proceso se ha agregado a la lista de espera
 
-            } else {
-                // Si hay particiones disponibles creamos el proceso
-                Proceso nuevoProceso = new Proceso(nombreProceso);
-                boolean asignado = memoria.asignarMemoriaProceso(nuevoProceso);
-                // Asignar un nuevo proceso, en caso que haya libres y el tamaño alcance
-                if (asignado) {
-                    JOptionPane.showMessageDialog(this, "Proceso agregado correctamente.", "Éxito",
-                            JOptionPane.INFORMATION_MESSAGE);
+                } else if (memoria.todasParticionesOcupadas()) {
+                    // Validar que haya particiones libres si estan ocupadas muetsra el mensaje
+                    // Aqui se debe implememtar la lista de espera, se supone que es el primer
+                    // proceso que se agrega a espera
+                    memoria.agregarProcesoEspera(nuevoProceso);
+                    areaMensajes.append("Error: No hay particiones libres para el proceso " + nombreProceso + ".\n");
+                    System.out.println("No hay particiones libres para el proceso " + nombreProceso + ".\n");
 
-                    areaMensajes.append("Proceso " + nombreProceso + " asignado correctamente. Tamaño: "
-                            + nuevoProceso.getTamano() + "\n");
-                    System.out.println("Proceso " + nombreProceso + " asignado correctamente. \n");
                 } else {
-                    // Si no hay tamaño suficiente, no alcanza
-                    areaMensajes.append("Error: Espacio insuficiente para el proceso " + nombreProceso + ". Tamaño: "
-                            + nuevoProceso.getTamano() + "\n");
+                    // Si hay particiones disponibles creamos el proceso
+
+                    // El proceso alcanzó una partición
+                    boolean asignado = memoria.asignarMemoriaProceso(nuevoProceso);
+                    // Asignar un nuevo proceso, en caso que haya libres y el tamaño alcance
+                    if (asignado) {
+                        JOptionPane.showMessageDialog(this, "Proceso agregado correctamente.", "Éxito",
+                                JOptionPane.INFORMATION_MESSAGE);
+
+                        areaMensajes.append("Proceso " + nombreProceso + " asignado correctamente. Tamaño: "
+                                + nuevoProceso.getTamano() + "\n");
+                        System.out.println("Proceso " + nombreProceso + " asignado correctamente. \n");
+                    } else {
+                        // Si no hay tamaño suficiente, no alcanza
+                        areaMensajes.append("Error: No se pudo asignar el proceso " + nombreProceso + ". Tamaño: "
+                                + nuevoProceso.getTamano() + "\n");
+                        memoria.agregarProcesoEspera(nuevoProceso);
+
+                    }
+
                 }
 
-                // Llamar a la funcion que actualiza la tabla con el nuevo proceso
-                actualizarTabla();
-                // memoria.asignarDesdeListaEspera();
+            } else {
+                // Si no hay tamaño suficiente, no alcanza
+                areaMensajes.append("Error: El proceso " + nombreProceso + " no alcanza en ninguna partición. Tamaño: "
+                        + nuevoProceso.getTamano() + "\n");
             }
+            // Llamar a la funcion que actualiza la tabla con el nuevo proceso
+            actualizarTabla();
         }
     }
 
@@ -211,6 +235,9 @@ public class InterfazGrafica extends JFrame {
         // Se llama a la funcion que verfifica el tiempo restante de los procesos
         memoria.liberarMemoria();
         memoria.reducirTiemposRestantes();
+
+        // Intentar asignar procesos en espera a particiones disponibles
+        asignarProcesosEnEspera();
 
         // Limpiar el modelo de la tabla
         tablaModelo.setRowCount(0);
@@ -249,6 +276,22 @@ public class InterfazGrafica extends JFrame {
         // Llenar la tabla con información actualizada de los procesos en espera
         for (Proceso proceso : memoria.getProcesosEnEspera()) {
             tablaModeloEspera.addRow(new Object[] { proceso.getNombre(), proceso.getTamano() });
+        }
+    }
+
+    // Método para intentar asignar procesos en espera a particiones disponibles
+    private void asignarProcesosEnEspera() {
+        List<Proceso> procesosEnEspera = new ArrayList<>(memoria.getProcesosEnEspera());
+
+        for (Proceso procesoEspera : procesosEnEspera) {
+            if (memoria.asignarMemoriaProceso(procesoEspera)) {
+            
+                // Si se asigna en memoria, se saca de la lista de espera
+                memoria.removerProcesoEspera(procesoEspera);
+                areaMensajes.append("Proceso " + procesoEspera.getNombre() + " asignado desde lista de espera. Tamaño: "
+                        + procesoEspera.getTamano() + "\n");
+                System.out.println("Proceso " + procesoEspera.getNombre() + " asignado desde lista de espera. \n");
+            }
         }
     }
 
