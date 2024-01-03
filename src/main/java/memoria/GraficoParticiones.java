@@ -20,21 +20,21 @@ public class GraficoParticiones extends JPanel {
     @Override
 protected void paintComponent(Graphics g) {
     super.paintComponent(g);
-
+    //System.out.println("Painting GraficoParticiones...");
     if (memoria != null) {
         List<Particion> particiones = memoria.getParticiones();
 
         // Título
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 16));
-        String titulo = "GRAFICO DE DESCRIPCION DE PARTICIONES";
+        String titulo = "GRÁFICO DE DESCRIPCIÓN DE PARTICIONES";
         int tituloWidth = g.getFontMetrics().stringWidth(titulo);
         int tituloX = (getWidth() - tituloWidth) / 2;
         int tituloY = 20;
         g.drawString(titulo, tituloX, tituloY);
 
-        int particionHeight = 30;
-        int startY = tituloY + 5;
+        int particionHeight = 40;
+        int startY = tituloY + 10;
 
         for (Particion particion : particiones) {
             int particionY = startY + particiones.indexOf(particion) * particionHeight;
@@ -77,9 +77,26 @@ private String obtenerTextoInterior(Particion particion) {
 
     private Color getColorParticion(Particion particion) {
         if (particion.getNombre().equals("Sistema Operativo")) {
-            return Color.YELLOW;  // Amarillo para el sistema operativo
+            return new Color(230,229,11);  // Amarillo para el sistema operativo
         } else {
-            return particion.estaOcupada() ? Color.RED : Color.GREEN;
+            return particion.estaOcupada() ? new Color(229,54,33) : new Color(139,230,11);
         }
     }
+    
+    
+    public static void main(String[] args) {
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 500);
+
+        Memoria memoria = new Memoria(); // Asegúrate de que memoria tenga particiones asignadas
+        GraficoParticiones graficoParticiones = new GraficoParticiones(memoria);
+
+        JScrollPane scrollPane = new JScrollPane(graficoParticiones, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        frame.add(scrollPane);
+        frame.setVisible(true);
+    }
 }
+
+
