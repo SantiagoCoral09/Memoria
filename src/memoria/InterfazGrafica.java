@@ -29,6 +29,9 @@ public class InterfazGrafica extends JFrame {
     private JTextArea areaMensajes;
     private Timer temporizador;
 
+    private GraficoParticiones graficoParticiones; // Nueva instancia para el gráfico
+
+
     // Para la tabla de procesos en espera
     private DefaultTableModel tablaModeloEspera;
     private JTable tablaEspera;
@@ -38,7 +41,7 @@ public class InterfazGrafica extends JFrame {
 
         setTitle("Asignación Contigua Estática - Primer Ajuste");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 500); // Ajusta el tamaño del frame
+        setSize(1000, 720); // Ajusta el tamaño del frame
 
         // Panel principal que contiene toda la interfaz
         JPanel panelPrincipal = new JPanel(new BorderLayout());
@@ -46,13 +49,14 @@ public class InterfazGrafica extends JFrame {
         // Panel superior que contiene la información de la memoria
         JPanel panelMemoria = new JPanel(new GridLayout(2, 1));
         JLabel labelInfoM = new JLabel("");
-        JLabel labelInfoMemoria = new JLabel("Tamaño Total de Memoria: " + memoria.getTamanoMemoria(),
+        JLabel labelInfoMemoria = new JLabel("ASIGNACIÓN CONTIGUA ESTÁTICA - PRIMER AJUSTE",
                 SwingConstants.CENTER);
         panelMemoria.add(labelInfoM);
         panelMemoria.add(labelInfoMemoria, BorderLayout.NORTH);
 
         // Panel central que contiene la tabla principal y la tabla de procesos en
         // espera
+        // JSplitPane panelCentral = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         JSplitPane panelCentral = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
         // Panel izquierdo para la tabla de particiones y botón
@@ -71,7 +75,7 @@ public class InterfazGrafica extends JFrame {
         JLabel labelInfoTabla6 = new JLabel(
                 "- Tiempo Restante: Tiempo restante de ejecución del proceso asignado. Si la partición está libre, esta columna estará en cero.");
         JLabel labelInfoTabla7 = new JLabel("");
-        JLabel labelInfoTabla8 = new JLabel("<html><div style='text-align:center;'>Tabla de particiones</div></html>",
+        JLabel labelInfoTabla8 = new JLabel("Tabla de particiones. Tamaño Total de Memoria: " + memoria.getTamanoMemoria()+".",
                 SwingConstants.CENTER);
 
         panelInfoTabla.add(labelInfoTabla);
@@ -145,8 +149,18 @@ public class InterfazGrafica extends JFrame {
         JScrollPane scrollPaneMensajes = new JScrollPane(areaMensajes);
         scrollPaneMensajes.setPreferredSize(new Dimension(750, 70)); // Dimensiones personalizadas del área de mensajes
 
-        panelPrincipal.add(scrollPaneMensajes, BorderLayout.SOUTH); // Ajusta el área de mensajes para que quede debajo
-                                                                    // de la tabla
+        // Nuevo componente para el gráfico
+        graficoParticiones = new GraficoParticiones(memoria);
+        JScrollPane scrollPaneGrafico = new JScrollPane(graficoParticiones);
+        scrollPaneGrafico.setPreferredSize(new Dimension(750, 200)); // Ajusta el tamaño del área del gráfico
+
+        // Panel mensajes que contiene toda la interfaz
+        JPanel panelMensajesGrafico = new JPanel(new BorderLayout());
+
+        // Agregar el área de mensajes y el gráfico al panel principal
+        panelMensajesGrafico.add(scrollPaneMensajes, BorderLayout.NORTH);
+        panelMensajesGrafico.add(scrollPaneGrafico, BorderLayout.SOUTH);
+        panelPrincipal.add(panelMensajesGrafico, BorderLayout.SOUTH);
 
         // Funcion de inicialización y actualización de la tabla
         actualizarTabla();
@@ -167,6 +181,12 @@ public class InterfazGrafica extends JFrame {
 
         // Agrega el panel principal al frame
         add(panelPrincipal);
+        // Establece la ubicación y tamaño predeterminados del divisor del JSplitPane
+        panelCentral.setDividerLocation(0.7); // Ajusta según sea necesario
+
+        // Establece el tamaño preferido del JSplitPane
+        panelCentral.setPreferredSize(new Dimension(800, 500)); // Ajusta según sea necesario
+
     }
 
     // Método para agregar un nuevo proceso
@@ -178,22 +198,26 @@ public class InterfazGrafica extends JFrame {
             Proceso nuevoProceso = new Proceso(nombreProceso);
 
             if (memoria.procesoAlcanzaEnParticion(nuevoProceso)) {
-                // Verificar si hay procesos en la lista de espera
-                if (!memoria.getProcesosEnEspera().isEmpty()) {
-                    // Agregar el proceso al final de la lista de espera
-                    memoria.agregarProcesoEspera(nuevoProceso);
-                    areaMensajes.append("Proceso " + nombreProceso + " agregado a la lista de espera.\n");
-                    System.out.println("Proceso " + nombreProceso + " agregado a la lista de espera.\n");
-                    actualizarTabla();
-                    return; // Salir del método ya que el proceso se ha agregado a la lista de espera
+                // Primero se valida si el tamaño del proceso alcanza en una de las particiones
 
-                } else if (memoria.todasParticionesOcupadas()) {
+                // Verificar si hay procesos en la lista de espera
+                // if (!memoria.getProcesosEnEspera().isEmpty()) {
+
+                //     // Agregar el proceso al final de la lista de espera
+                //     memoria.agregarProcesoEspera(nuevoProceso);
+                //     areaMensajes.append("Proceso " + nombreProceso + " agregado a la lista de espera.\n");
+                //     System.out.println("Proceso " + nombreProceso + " agregado a la lista de espera.\n");
+                //     actualizarTabla();
+                //     return; // Salir del método ya que el proceso se ha agregado a la lista de espera
+
+                // } else
+                 if (memoria.todasParticionesOcupadas()) {
                     // Validar que haya particiones libres si estan ocupadas muetsra el mensaje
                     // Aqui se debe implememtar la lista de espera, se supone que es el primer
                     // proceso que se agrega a espera
                     memoria.agregarProcesoEspera(nuevoProceso);
-                    areaMensajes.append("Error: No hay particiones libres para el proceso " + nombreProceso + ".\n");
-                    System.out.println("No hay particiones libres para el proceso " + nombreProceso + ".\n");
+                    areaMensajes.append("Error: No hay particiones libres para el proceso " + nombreProceso + ". Se agregó a la lista de espera\n");
+                    System.out.println("No hay particiones libres para el proceso " + nombreProceso + ". Se agregó a la lista de espera\n");
 
                 } else {
                     // Si hay particiones disponibles creamos el proceso
@@ -209,9 +233,12 @@ public class InterfazGrafica extends JFrame {
                                 + nuevoProceso.getTamano() + "\n");
                         System.out.println("Proceso " + nombreProceso + " asignado correctamente. \n");
                     } else {
-                        // Si no hay tamaño suficiente, no alcanza
-                        areaMensajes.append("Error: No se pudo asignar el proceso " + nombreProceso + ". Tamaño: "
-                                + nuevoProceso.getTamano() + "\n");
+                        // Si no hay particion libre pero si alcanza en una se agrega a la lista de
+                        // espera
+                        areaMensajes.append("Error: El proceso '" + nombreProceso + "', de Tamaño: "
+                                + nuevoProceso.getTamano() + " alcanza pero las particiones están ocupadas. Se agregó a la lista de espera.\n");
+                        System.out.println("Error: El proceso '" + nombreProceso + "', de Tamaño: "
+                                + nuevoProceso.getTamano() + " alcanza pero las particiones están ocupadas. Se agregó a la lista de espera.\n");
                         memoria.agregarProcesoEspera(nuevoProceso);
 
                     }
@@ -222,14 +249,20 @@ public class InterfazGrafica extends JFrame {
                 // Si no hay tamaño suficiente, no alcanza
                 areaMensajes.append("Error: El proceso " + nombreProceso + " no alcanza en ninguna partición. Tamaño: "
                         + nuevoProceso.getTamano() + "\n");
+                System.out.println("Error: El proceso " + nombreProceso + " no alcanza en ninguna partición. Tamaño: "
+                        + nuevoProceso.getTamano() + "\n");
             }
             // Llamar a la funcion que actualiza la tabla con el nuevo proceso
+            graficoParticiones.setMemoria(memoria);
+
             actualizarTabla();
         }
     }
 
     // Método para actualizar la tabla de memoria
     private void actualizarTabla() {
+        graficoParticiones.repaint();
+        // Se llama al metodo para actualizar la tabla de espera
         actualizarTablaEspera();
 
         // Se llama a la funcion que verfifica el tiempo restante de los procesos
@@ -281,11 +314,13 @@ public class InterfazGrafica extends JFrame {
 
     // Método para intentar asignar procesos en espera a particiones disponibles
     private void asignarProcesosEnEspera() {
+        // Se crea una copia de la lista de espera para iterarla
         List<Proceso> procesosEnEspera = new ArrayList<>(memoria.getProcesosEnEspera());
 
         for (Proceso procesoEspera : procesosEnEspera) {
             if (memoria.asignarMemoriaProceso(procesoEspera)) {
-            
+                // Se llama al metodo para asignar el proceso en una particion disponible
+
                 // Si se asigna en memoria, se saca de la lista de espera
                 memoria.removerProcesoEspera(procesoEspera);
                 areaMensajes.append("Proceso " + procesoEspera.getNombre() + " asignado desde lista de espera. Tamaño: "

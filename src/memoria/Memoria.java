@@ -40,13 +40,17 @@ public class Memoria {
 
         // Crear particiones aleatorias
         for (int i = 0; i < numParticiones - 1; i++) {
-            int tamanoParticion = random.nextInt(espacioRestante / 2) + 50;
+            int limiteSuperior = Math.max(1, espacioRestante / 2 - 49); // Asegurar un límite positivo
+            int tamanoParticion = random.nextInt(limiteSuperior) + 50; //Minimo tendra tamaño de 50
             particiones.add(new Particion("Partición " + (i + 1), tamanoParticion));
             espacioRestante -= tamanoParticion;
         }
 
-        // Crear la última partición con el espacio restante
-        particiones.add(new Particion("Partición " + numParticiones, espacioRestante));
+        // Crear la última partición con el espacio restante, asegurándote de que sea al
+        // menos 50
+        int tamanoUltimaParticion = Math.max(espacioRestante, 50);
+        particiones.add(new Particion("Partición " + numParticiones, tamanoUltimaParticion));
+
     }
 
     /**
@@ -110,7 +114,7 @@ public class Memoria {
                 }
             }
         }
-        return false;//Si no alcanza el proceso en ninguna particion
+        return false;// Si no alcanza el proceso en ninguna particion o están ocupadas
     }
 
     /**
